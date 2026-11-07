@@ -249,3 +249,4 @@ function renderAudio() {
 
 renderPortfolio();
 renderAudio();
+window.audioSamplesReady?.then(() => renderAudio()).catch(() => {});
