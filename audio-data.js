@@ -5,11 +5,15 @@ window.audioSamples = [{
   labelEn: 'Job Interview',
   src: ''
 }];
-window.audioSamplesReady = fetch('audio/english-self-introduction.m4a.base64')
-  .then((response) => { if (!response.ok) throw new Error('Audio not found'); return response.text(); })
-  .then((encoded) => {
-    const binary = atob(encoded.trim());
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
-    window.audioSamples[0].src = URL.createObjectURL(new Blob([bytes], { type: 'audio/mp4' }));
+window.audioSamplesReady = Promise.all(Array.from({ length: 20 }, (_, index) => {
+  const part = String(index).padStart(2, '0');
+  return fetch(`audio/b64/part-${part}.txt`).then((response) => {
+    if (!response.ok) throw new Error('Audio segment unavailable');
+    return response.text();
   });
+})).then((segments) => {
+  const binary = atob(segments.join('').trim());
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  window.audioSamples[0].src = URL.createObjectURL(new Blob([bytes], { type: 'audio/mp4' }));
+});
